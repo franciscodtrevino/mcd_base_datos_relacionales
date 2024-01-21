@@ -12,7 +12,28 @@ https://github.com/franciscodtrevino/mcd_bdr
 
 #### Se tiene la necesidad de definir una base de datos para manejar el portafolio de inversiones de varios clientes. Se identifica de forma preliminar que la base de datos deberá contener información siguiente:
 
-La base de datos está diseñada para gestionar información relacionada con el portafolio de inversiones en instrumentos bursátiles de varios clientes. La entidad principal es "Cliente", con atributos como "ID_Cliente" (entero), "Nombre" (cadena de caracteres),  "Apellido_Paterno" (cadena de caracteres),  "Apellido_Materno" (cadena de caracteres) y "Correo_Electronico" (cadena de caracteres).
+
+Se tiene el requerimiento de llevar el control de un portafolio de inversiones en instrumentos bursátiles para varios clientes.
+
+Se debe poder almacenar y consultar la información de forma separada de todos clientes, y con los detalles sobre los instrumentos financieros en los que han invertido.
+
+Las entidades identificadas hasta el momento son las siguientes:
+
+Clientes:
+Para cada cliente, se debe almacenar la información básica como nombre, apellidos y dirección de correo electrónico. Además, cada cliente tiene un número de identificación único.
+
+Instrumentos Financieros:
+Se debe contar con un catálogo que contiene todos los instrumentos financieros disponibles. Cada instrumento tiene su propio número de identificación y una descripción.
+
+Portafolio:
+La parte principal de la base de datos es el "Portafolio", donde se enlazan a los clientes con los instrumentos financieros en los que han invertido. Para cada transaccion, se debe registrar la cantidad de dinero invertida, la fecha de la inversión, el rendimiento obtenido y otros detalles importantes como el número de títulos, el costo promedio, el precio de mercado actual y variaciones históricas.
+
+Transacciones:
+Debe servir para el registro de las transacciones que realiza cada cliente en un instrumento financiero. Esto incluye detalles sobre la fecha de la transacción, el precio de la transacción, la cantidad de títulos comprados o vendidos, y el monto total de la transacción.
+
+La base de datos debe ayudar a organizar y seguir la pista de las inversiones de cada cliente, para saber cuánto han invertido, así como las ganancias o pérdidas, y los detalles de cada transacción que han realizado en el mercado financiero.
+
+La entidad principal es "Cliente", con atributos como "ID_Cliente" (entero), "Nombre" (cadena de caracteres),  "Apellido_Paterno" (cadena de caracteres),  "Apellido_Materno" (cadena de caracteres) y "Correo_Electronico" (cadena de caracteres).
 
 Otra entidad clave es "Instrumento" que es un catálogo con los instrumentos bursátiles, con atributos como "ID_Instrumento" (entero), "Descripcion" (cadena de caracteres), "ID_Tipo_Instrumento" (entero).
 
@@ -72,9 +93,6 @@ Entidad: Transaccion
 - Fecha_Transaccion (fecha)
 - Titulos (entero)
 - Monto_Transaccion (decimal)
-
-
-Esta estructura proporciona un marco flexible para admininistrar la información del portafolio de inversiones, permitiendo el seguimiento detallado de las inversiones y transacciones de cada cliente en instrumentos bursátiles.
 
 
 ### [1 punto] Investigar diferentes SGBD, elegir alguno y describirlo. Citar adecuadamente. Plagio invalida tarea.
