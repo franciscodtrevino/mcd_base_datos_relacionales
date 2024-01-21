@@ -78,28 +78,29 @@ Esta estructura proporciona un marco flexible para admininistrar la información
 
 
 ### [1 punto] Investigar diferentes SGBD, elegir alguno y describirlo. Citar adecuadamente. Plagio invalida tarea.
-#### Los diferentes SGDB más utilizados son:
-#### Oracle: https://www.oracle.com/database/
-#### Microsoft SQL Server: https://www.microsoft.com/en-us/sql-server/sql-server-2022
-#### MySQL: https://www.mysql.com/
-#### Postgress: https://www.postgresql.org/
+
+#### Se investigaron los SGDB más utilizados en la industria siguientes:
+#### - Oracle: https://www.oracle.com/database/
+#### - Microsoft SQL Server: https://www.microsoft.com/en-us/sql-server/sql-server-2022
+#### - MySQL: https://www.mysql.com/
+#### - Postgress: https://www.postgresql.org/
 
 #### Referencias para elección de SGBD:
 
-#### Postgres vs. MySQL: a Complete Comparison in 2023
-#### https://www.bytebase.com/blog/postgres-vs-mysql/
+#### - Postgres vs. MySQL: a Complete Comparison in 2023
+#### - https://www.bytebase.com/blog/postgres-vs-mysql/
 
-#### historical trend of MySQL vs. PostgreSQL popularity
-#### https://db-engines.com/en/ranking_trend/system/MySQL%3BPostgreSQL
+#### - historical trend of MySQL vs. PostgreSQL popularity
+#### - https://db-engines.com/en/ranking_trend/system/MySQL%3BPostgreSQL
 
-#### The Most Popular Databases in 2024 | Blog - BairesDev
-#### https://www.bairesdev.com/blog/most-popular-databases/
+#### - The Most Popular Databases in 2024 | Blog - BairesDev
+#### - https://www.bairesdev.com/blog/most-popular-databases/
 
-#### Most Popular Databases in 2023 - GeeksforGeeks
-#### https://www.geeksforgeeks.org/most-popular-databases/
+#### - Most Popular Databases in 2023 - GeeksforGeeks
+#### - https://www.geeksforgeeks.org/most-popular-databases/
 
-#### Top 10 Most Popular Databases Use in 2024 | Zuci Systems
-#### https://www.zucisystems.com/blog/most-popular-databases/
+#### - Top 10 Most Popular Databases Use in 2024 | Zuci Systems
+#### - https://www.zucisystems.com/blog/most-popular-databases/
 
 
 
