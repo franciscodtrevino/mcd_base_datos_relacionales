@@ -55,24 +55,32 @@ Entidad: Tipo_Instrumento
 - ID_Tipo_Instrumento (entero)
 - Descripcion (cadena de caracteres)
 
+Entidad: Tipo_Valor
+- ID_Tipo_Valor (entero)
+- CVE_Tipo_Valor (cadena de caracteres)
+- Descripcion (cadena de caracteres)
+
 Entidad: Instrumento
 - ID_Instrumento (entero)
 - Descripcion (cadena de caracteres)
 - ID_Tipo_Instrumento (entero)
+- Simbolo (cadena de caracteres)
+- ID_Tipo_Valor (entero)
 
-Entidad: Last
-- id_instrumento (entero)
-- fecha_actual (fecha)
-- valor_actual (decimal)
-- fecha_anterior (fecha)
-- valor_anterior (decimal)
-- variacion_unitaria (decimal)
-- variacion_porcentual (decimal)
+Entidad: Histórico_Precios
+- ID_Instrumento (entero)
+- Fecha (fecha)
+- Precio (decimal)
+- Fecha_Anterior (fecha)
+- Precio_Anterior (decimal)
+- Variacion_Unitaria (decimal)
+- Variacion_Porcentual (decimal)
 
 Relación: Portafolio
 - ID_Portafolio (entero)
 - ID_Cliente (clave foránea a "Cliente")
-- ID_Instrumento (clave foránea a "Instrumento")
+- Descripcion (cadena de caracteres)
+- Fecha (fecha)
 - Monto_Invertido (decimal)
 - Fecha_Portafolio (fecha)
 - Titulos (entero)
@@ -81,18 +89,31 @@ Relación: Portafolio
 - Precio_Promedio_Porcentual (decimal)
 - Variacion_Porcentual_Historica (decimal)
 
-Entidad: Tipo_Transaccion
-- ID_Tipo_Transaccion (entero)
-- Descripcion (cadena de caracteres)
-
-Entidad: Transaccion
-- ID_Transaccion (entero)
-- ID_Cliente (clave foránea a "Cliente")
-- ID_Instrumento (clave foránea a "Instrumento")
-- ID_Tipo_Transaccion (entero)
-- Fecha_Transaccion (fecha)
+Relación: Inversion
+- ID_Inversion (entero)
+- ID_Portafolio (entero) (clave foránea a "Cliente")
+- ID_Instrumento (entero) (clave foránea a "Instrumento")
+- Monto_Invertido (decimal)
+- Fecha_Portafolio (fecha)
 - Titulos (entero)
-- Monto_Transaccion (decimal)
+- Costo_Promedio (decimal)
+- Precio_Mercado (decimal)
+- Precio_Promedio_Porcentual (decimal)
+- Variacion_Porcentual_Historica (decimal)
+
+Entidad: Tipo_Movimiento
+- ID_Tipo_Movimiento (entero)
+- Descripcion (cadena de caracteres)
+- Deposito (booleano)
+
+Entidad: Movimiento
+- ID_Movimiento (entero)
+- ID_Portafolio (entero) (clave foránea a "Cliente")
+- ID_Instrumento (entero) (clave foránea a "Instrumento")
+- ID_Tipo_Movimiento (entero) (clave foránea a "Tipo_Movimiento")
+- Fecha (fecha)
+- Titulos (entero)
+- Monto (decimal)
 
 
 ### [1 punto] Investigar diferentes SGBD, elegir alguno y describirlo. Citar adecuadamente. Plagio invalida tarea.
