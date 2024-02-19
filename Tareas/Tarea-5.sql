@@ -54,28 +54,34 @@ create table historico_precios  (
     id INT  auto_increment primary key,
     id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
     fecha DATETIME ,
-    precio_cierre NUMERIC (20, 6) ,
-    precio_apertura NUMERIC (20, 6) ,
-    precio_minimo NUMERIC (20, 6) ,
-    precio_maximo NUMERIC (20, 6) 
+    precio_cierre NUMERIC (20, 2) ,
+    precio_apertura NUMERIC (20, 2) ,
+    precio_minimo NUMERIC (20, 2) ,
+    precio_maximo NUMERIC (20, 2) 
 ) AUTO_INCREMENT=1;
 
-/*
+
 create table ultimo_precio  (
     id INT  auto_increment primary key,
     id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
-    fecha DATETIME ,
-    precio_cierre NUMERIC (20, 6) ,
-    precio_apertura NUMERIC (20, 6) ,
-    precio_minimo NUMERIC (20, 6) ,
-    precio_maximo NUMERIC (20, 6) ,
-    fecha_uha DATETIME ,
-    precio_cierre_uha NUMERIC (20, 6),
-    variacion_unitaria NUMERIC (20, 6),
+    fecha_precio_actual DATE,
+    hora_actual INTEGER,
+    precio_actual NUMERIC (20, 2) ,
+    volumen NUMERIC (20, 0) ,
+    importe NUMERIC (20, 2) ,
+    numero_operaciones INT,
+
+    precio_maximo_dia NUMERIC (20, 2) ,
+    precio_minimo_dia NUMERIC (20, 2) ,
+
+    fecha_precio_anterior DATETIME ,
+    precio_anterior NUMERIC (20, 2),
+    variacion_unitaria NUMERIC (20, 2),
     variacion_porcentual NUMERIC (20, 6),
     fecha_actualizacion DATETIME default CURRENT_TIMESTAMP
 ) AUTO_INCREMENT=1;
-*/
+
+
 
 
 
@@ -84,11 +90,11 @@ create table portafolio  (
     id_cliente INT ,   foreign key (id_cliente) references cliente (id), 
     descripcion VARCHAR(100),
     fecha DATETIME ,
-    monto_invertido NUMERIC (20, 6) ,
-    titulos NUMERIC (20, 6) ,
-    costo_promedio NUMERIC (20, 6) ,
-    precio_mercado NUMERIC (20, 6) ,
-    precio_promedio_porcentual NUMERIC (20, 6) ,
+    monto_invertido NUMERIC (20, 2) ,
+    titulos NUMERIC (20, 2) ,
+    costo_promedio NUMERIC (20, 2) ,
+    precio_mercado NUMERIC (20, 2) ,
+    precio_promedio_porcentual NUMERIC (20, 2) ,
     variacion_porcentual_historica NUMERIC (20, 6) 
 ) AUTO_INCREMENT=1;
 
@@ -100,11 +106,11 @@ create table inversion  (
     id_portafolio INT ,   foreign key (id_portafolio) references portafolio (id), 
     id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
     fecha DATETIME ,
-    monto_invertido NUMERIC (20, 6) ,
-    titulos NUMERIC (20, 6) ,
-    costo_promedio NUMERIC (20, 6) ,
-    precio_mercado NUMERIC (20, 6) ,
-    precio_promedio_porcentual NUMERIC (20, 6) ,
+    monto_invertido NUMERIC (20, 2) ,
+    titulos NUMERIC (20, 2) ,
+    costo_promedio NUMERIC (20, 2) ,
+    precio_mercado NUMERIC (20, 2) ,
+    precio_promedio_porcentual NUMERIC (20, 2) ,
     variacion_porcentual_historica NUMERIC (20, 6) 
 ) AUTO_INCREMENT=1;
 
@@ -123,8 +129,8 @@ create table movimiento  (
     id_portafolio INT ,   foreign key (id_portafolio) references portafolio (id), 
     id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
     fecha DATETIME ,
-    titulos NUMERIC (20, 6) ,
-    monto NUMERIC (20, 6) ,
+    titulos NUMERIC (20, 2) ,
+    monto NUMERIC (20, 2) ,
     id_tipo_movimiento INT ,   foreign key (id_tipo_movimiento) references tipo_movimiento (id)
 ) AUTO_INCREMENT=1;
 
@@ -327,6 +333,77 @@ INSERT INTO `portafolio`.`instrumento` (id_tipo_valor, simbolo, descripcion, isi
 (2, 'VITROA', 'VITRO, S.A.B. DE C.V.', 'MXP9802B1093', 'VITRO', 'A', 1), 
 (2, 'VOLARA', 'CONTROLADORA VUELA COMPAÑIA DE AVIACION, S.A.B. DE', 'MX01VO000009', 'VOLAR', 'A', 1), 
 (2, 'WALMEX*', 'WAL - MART DE MEXICO, S.A.B. DE C.V.', 'MX01WA000038', 'WALMEX', '*', 1); 
+
+
+
+
+
+
+
+
+
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-01-30', 1336, 133.5, 4, 527.96, 1,0, 100000000, '2024-01-30', 133.5, 0, 0 FROM instrumento where simbolo = 'LAMOSA*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1145, 3.01, 240, 720.54, 10,3.01, 3.01, '2024-02-16', 3, 0.01, 0.3333 FROM instrumento where simbolo = 'VASCONI*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-01-31', 1304, 44, 5, 220, 2,0, 100000000, '2024-01-31', 44, 0, 0 FROM instrumento where simbolo = 'GPH1');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 149.64, 8382, 1253954.43, 132,150.16, 149.07, '2024-02-16', 150.06, -0.42, -0.2799 FROM instrumento where simbolo = 'GCARSOA1');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1029, 24.63, 436, 10738.44, 6,24.63, 24.63, '2024-02-16', 24.5, 0.13, 0.5306 FROM instrumento where simbolo = 'GISSAA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1218, 125.63, 61043, 7607611.72, 1377,125.99, 123.14, '2024-02-16', 124.56, 1.07, 0.859 FROM instrumento where simbolo = 'CHDRAUIB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-16', 1248, 15.03, 59, 885, 8,0, 100000000, '2024-02-16', 15.03, 0, 0 FROM instrumento where simbolo = 'ACTINVRB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1051, 1.69, 1944, 3281.46, 44,1.69, 1.69, '2024-02-16', 1.68, 0.01, 0.5952 FROM instrumento where simbolo = 'TEAKCPO');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2021-08-24', 1324, 59.95, 8, 472, 5,0, 100000000, '2021-08-24', 59.95, 0, 0 FROM instrumento where simbolo = 'PAPPEL*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2023-02-15', 1422, 20, 10, 200.63, 3,0, 100000000, '2023-02-15', 20, 0, 0 FROM instrumento where simbolo = 'MONEXB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1129, 4.16, 861, 3581.41, 12,4.16, 4.16, '2024-02-16', 4.19, -0.03, -0.716 FROM instrumento where simbolo = 'SPORTS');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2018-11-09', 1438, 27.25, 855, 23068.23, 75,27.25, 26.79, '2018-11-08', 27.24, 0.01, 0.0367 FROM instrumento where simbolo = 'OHLMEX*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-16', 1454, 3.36, 294, 992.55, 24,0, 100000000, '2024-02-16', 3.36, 0, 0 FROM instrumento where simbolo = 'MFRISCOA-1');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2023-05-31', 1356, 0.5, 60240, 30385.697, 129,0.506, 0.5, '2023-05-30', 0.506, -0.006, -1.1858 FROM instrumento where simbolo = 'AZTECACPO');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2022-12-19', 1057, 167, 4, 654.64, 2,0, 100000000, '2022-12-19', 167, 0, 0 FROM instrumento where simbolo = 'AEROMEX*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 188.35, 27465, 5182357, 291,190.94, 187.38, '2024-02-16', 189.96, -1.61, -0.8475 FROM instrumento where simbolo = 'AC*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2018-04-20', 1459, 116.34, 109252, 12648106.46, 1243,117.54, 114.85, '2018-04-19', 117.64, -1.3, -1.1051 FROM instrumento where simbolo = 'GFREGIOO');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2004-10-04', 1345, 0.2050000131, 26000, 5330, 2,0.2050000131, 0.2050000131, '2004-07-22', 0.2051280141, -0.000128001, -0.0624005333 FROM instrumento where simbolo = 'TLEVISAL');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2005-06-10', 1224, 0.1800000072, 600, 108, 1,0.1800000072, 0.1800000072, '2005-05-06', 0.1800000072, 0, 0 FROM instrumento where simbolo = 'TLEVISAA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1214, 10.87, 74395, 807391.14, 1161,10.89, 10.83, '2024-02-16', 10.83, 0.04, 0.3693 FROM instrumento where simbolo = 'ALPEKA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-16', 1409, 2.33, 15, 34.53, 6,0, 100000000, '2024-02-16', 2.33, 0, 0 FROM instrumento where simbolo = 'TMMA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 61.68, 130327, 8027024.05, 1339,62.12, 61.15, '2024-02-16', 61.91, -0.23, -0.3715 FROM instrumento where simbolo = 'VESTA*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1219, 13.37, 960484, 12815811.82, 1043,13.42, 13.29, '2024-02-16', 13.42, -0.05, -0.3726 FROM instrumento where simbolo = 'CEMEXCPO');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2017-08-25', 1459, 1.48, 1868853, 2795062.37, 158,1.52, 1.47, '2017-08-24', 1.51, -0.03, -1.9868 FROM instrumento where simbolo = 'ICA*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-12', 1206, 125, 12, 1491.03, 8,0, 100000000, '2024-02-12', 125, 0, 0 FROM instrumento where simbolo = 'LIVEPOL1');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 37.84, 148816, 5655141.14, 259,38.33, 37.52, '2024-02-16', 37.85, -0.01, -0.0264 FROM instrumento where simbolo = 'KIMBERA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2023-10-06', 944, 35.16, 1, 34.7, 1,0, 100000000, '2023-10-06', 35.16, 0, 0 FROM instrumento where simbolo = 'KIMBERB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-01-26', 1058, 96, 7, 682.8, 4,0, 100000000, '2024-01-26', 96, 0, 0 FROM instrumento where simbolo = 'CERAMICB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1219, 126, 70424, 8874246.16, 310,127.38, 124.14, '2024-02-16', 125.26, 0.74, 0.5908 FROM instrumento where simbolo = 'LIVEPOLC-1');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1144, 189.69, 4230, 802046.97, 9,189.8, 189.6, '2024-02-16', 189.26, 0.43, 0.2272 FROM instrumento where simbolo = 'ICHB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2022-06-02', 1408, 9.7, 1, 9.3, 1,0, 100000000, '2022-06-02', 9.7, 0, 0 FROM instrumento where simbolo = 'PV*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-16', 1052, 12.24, 1717, 20834.04, 5,12.24, 12.12, '2024-02-15', 12, 0.24, 2 FROM instrumento where simbolo = 'CULTIBAB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2021-10-13', 1315, 73.7, 63, 4632.1, 18,0, 100000000, '2021-10-13', 73.7, 0, 0 FROM instrumento where simbolo = 'IENOVA*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1216, 4.99, 17510, 87674.82, 64,5.02, 4.99, '2024-02-16', 4.99, 0, 0 FROM instrumento where simbolo = 'HCITY*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 12.75, 71894, 912686.24, 633,12.76, 12.58, '2024-02-16', 12.75, 0, 0 FROM instrumento where simbolo = 'VOLARA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2022-10-24', 1319, 12.8, 82, 1053.1, 23,0, 100000000, '2022-10-24', 12.8, 0, 0 FROM instrumento where simbolo = 'LALAB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1216, 24.01, 156800, 3791232, 1274,24.89, 23.91, '2024-02-16', 24.52, -0.51, -2.0799 FROM instrumento where simbolo = 'GENTERA*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-12', 1131, 25.8, 17, 432.49, 3,0, 100000000, '2024-02-12', 25.8, 0, 0 FROM instrumento where simbolo = 'POSADASA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1046, 110.01, 9617, 1057968.51, 14,110.01, 110, '2024-02-16', 115, -4.99, -4.3391 FROM instrumento where simbolo = 'PINFRAL');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1143, 3.41, 2342, 8003.87, 48,3.43, 3.4, '2024-02-16', 3.41, 0, 0 FROM instrumento where simbolo = 'HOTEL*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-12', 1246, 19, 28, 532.3, 3,0, 100000000, '2024-02-12', 19, 0, 0 FROM instrumento where simbolo = 'BEVIDESB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2019-09-02', 853, 82.49, 1, 81.5, 1,0, 100000000, '2019-09-02', 82.49, 0, 0 FROM instrumento where simbolo = 'RASSINICPO');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2019-08-29', 931, 41.5, 500, 20750, 1,41.5, 41.5, '2019-08-16', 40.7, 0.8, 1.9656 FROM instrumento where simbolo = 'RASSINIA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1216, 31.39, 217012, 6734534.45, 906,31.5, 30.87, '2024-02-16', 30.51, 0.88, 2.8843 FROM instrumento where simbolo = 'AGUA*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '1960-12-31', 0, 1.19, 0, 0, 0,1.19, 1.19, '1960-12-31', 0, 1.19, 0 FROM instrumento where simbolo = 'HILASALB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-16', 1019, 180.97, 13, 2318.24, 4,0, 100000000, '2024-02-16', 180.97, 0, 0 FROM instrumento where simbolo = 'SIMECB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 67.69, 596141, 40499846.69, 2812,68.3, 67.64, '2024-02-16', 68.01, -0.32, -0.4705 FROM instrumento where simbolo = 'WALMEX*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-16', 1354, 2.3, 15, 34.8, 5,0, 100000000, '2024-02-16', 2.3, 0, 0 FROM instrumento where simbolo = 'GICSAB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1220, 3.43, 590155, 2032335.22, 1636,3.69, 3.41, '2024-02-16', 3.44, -0.01, -0.2907 FROM instrumento where simbolo = 'NEMAKA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2021-08-30', 902, 15.21, 101, 1537.65, 22,0, 100000000, '2021-08-30', 15.21, 0, 0 FROM instrumento where simbolo = 'ELEMENT*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1219, 192.94, 532928, 102965433.52, 658,195.02, 192.11, '2024-02-16', 192.71, 0.23, 0.1193 FROM instrumento where simbolo = 'Q*');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2023-12-21', 1438, 17.2, 18, 309.6, 2,0, 100000000, '2023-12-21', 17.2, 0, 0 FROM instrumento where simbolo = 'RLHA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2019-04-10', 1459, 126.99, 809053, 102752349.71, 6436,129.49, 126.06, '2019-04-09', 128.31, -1.32, -1.0288 FROM instrumento where simbolo = 'KOFL');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2017-10-04', 1135, 25, 2130, 53250, 1,25, 25, '2017-09-25', 25, 0, 0 FROM instrumento where simbolo = 'MASECAB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1036, 4.42, 6090, 27128.03, 30,4.57, 4.42, '2024-02-16', 4.57, -0.15, -3.2823 FROM instrumento where simbolo = 'CADUA');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '1960-12-31', 0, 19.1981, 0, 0, 0,19.1981, 19.1981, '1960-12-31', 0, 19.1981, 0 FROM instrumento where simbolo = 'LACOMERUB');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-19', 1218, 42.8, 24514, 1049452.82, 504,43.07, 42.63, '2024-02-16', 42.42, 0.38, 0.8958 FROM instrumento where simbolo = 'LACOMERUBC');
+INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-09', 1446, 12.29, 1, 12.29, 1,0, 100000000, '2024-02-09', 12.29, 0, 0 FROM instrumento where simbolo = 'JAVER*');
+
+
+
+
 
 
 INSERT INTO `portafolio`.`portafolio`
