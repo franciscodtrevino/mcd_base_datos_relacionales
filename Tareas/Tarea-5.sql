@@ -15,6 +15,10 @@ create table cliente  (
     apellido_paterno VARCHAR(50) ,
     apellido_materno VARCHAR(50) ,
     correo_electronico VARCHAR(50)
+--    saldo_cartera NUMERIC (20, 2) default 0,
+--    fecha_alta DATETIME null default CURRENT_TIMESTAMP,
+--    fecha_baja DATETIME null,
+--    fecha_cambio DATETIME null
 ) AUTO_INCREMENT=1;
 
 
@@ -57,8 +61,9 @@ create table historico_precios  (
     precio_cierre NUMERIC (20, 2) ,
     precio_apertura NUMERIC (20, 2) ,
     precio_minimo NUMERIC (20, 2) ,
-    precio_maximo NUMERIC (20, 2) 
-) AUTO_INCREMENT=1;
+    precio_maximo NUMERIC (20, 2) ,
+    fecha_actualizacion DATETIME default CURRENT_TIMESTAMP
+ ) AUTO_INCREMENT=1;
 
 
 create table ultimo_precio  (
@@ -88,30 +93,54 @@ create table ultimo_precio  (
 create table portafolio  (
     id INT  auto_increment primary key,
     id_cliente INT ,   foreign key (id_cliente) references cliente (id), 
-    descripcion VARCHAR(100),
-    fecha DATETIME ,
-    monto_invertido NUMERIC (20, 2) ,
+    id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
     titulos NUMERIC (20, 2) ,
     costo_promedio NUMERIC (20, 2) ,
     precio_mercado NUMERIC (20, 2) ,
     precio_promedio_porcentual NUMERIC (20, 2) ,
-    variacion_porcentual_historica NUMERIC (20, 6) 
+    valor_mercado NUMERIC (20, 2) ,
+    razon_p_m NUMERIC (20, 2) ,
+    variacion_porcentual_historica NUMERIC (20, 6) ,
+    variacion_porcentual_diaria NUMERIC (20, 6) ,
+    importe_por_costo NUMERIC (20, 6) ,
+    porcentaje_cartera NUMERIC (20, 6), 
+    fecha_actualizacion  DATETIME default CURRENT_TIMESTAMP
+) AUTO_INCREMENT=1;
+
+
+create table tipo_transaccion  (
+    id INT  auto_increment primary key,
+    descripcion VARCHAR(100) ,
+    cargo BIT
 ) AUTO_INCREMENT=1;
 
 
 
+INSERT INTO tipo_transaccion (`descripcion`, `cargo`)
+VALUES 
+('Compra de Acciones', 1),
+('Compra en Reporto', 1),
+('Vencimiento de Reporto', 0),
+('Venta de Acciones', 0),
+('Venta Soc.de Inv.- Cliente', 0);
 
-create table inversion  (
+
+
+create table transaccion  (
     id INT  auto_increment primary key,
     id_portafolio INT ,   foreign key (id_portafolio) references portafolio (id), 
     id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
     fecha DATETIME ,
-    monto_invertido NUMERIC (20, 2) ,
+    id_tipo_transaccion INT ,   foreign key (id_tipo_transaccion) references tipo_transaccion (id),
     titulos NUMERIC (20, 2) ,
-    costo_promedio NUMERIC (20, 2) ,
-    precio_mercado NUMERIC (20, 2) ,
-    precio_promedio_porcentual NUMERIC (20, 2) ,
-    variacion_porcentual_historica NUMERIC (20, 6) 
+    precio NUMERIC (20, 2),
+	tasa  NUMERIC (20, 2),
+	plazo  NUMERIC (20, 2),
+    intereses  NUMERIC (20, 2),
+	impuestos NUMERIC (20, 2),
+	comision NUMERIC (20, 2),
+	importe NUMERIC (20, 2),
+	saldo NUMERIC (20, 2)
 ) AUTO_INCREMENT=1;
 
 
@@ -123,32 +152,33 @@ create table tipo_movimiento  (
 ) AUTO_INCREMENT=1;
 
 
+create table estatus_movimiento (
+    id INT  auto_increment primary key,
+    descripcion VARCHAR(100)
+) AUTO_INCREMENT=1;
+
+
+
 
 create table movimiento  (
     id INT  auto_increment primary key,
-    id_portafolio INT ,   foreign key (id_portafolio) references portafolio (id), 
-    id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
+    id_cliente INT ,   foreign key (id_cliente) references cliente (id), 
     fecha DATETIME ,
-    titulos NUMERIC (20, 2) ,
+    hora TIME ,
+    folio LONG,
+    id_tipo_movimiento INT ,   foreign key (id_tipo_movimiento) references tipo_movimiento (id),
+    id_instrumento INT ,   foreign key (id_instrumento) references instrumento (id), 
     monto NUMERIC (20, 2) ,
-    id_tipo_movimiento INT ,   foreign key (id_tipo_movimiento) references tipo_movimiento (id)
+    id_estatus_movimiento INT ,   foreign key (id_estatus_movimiento) references estatus_movimiento (id)
 ) AUTO_INCREMENT=1;
 
 
 
 
 
-
-
-
-
-
-
-
-
-LOCK TABLES `portafolio`.`cliente` WRITE;
-/*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
-INSERT INTO `portafolio`.`cliente` VALUES 
+LOCK TABLES cliente WRITE;
+/*!40000 ALTER TABLE cliente DISABLE KEYS */;
+INSERT INTO cliente VALUES 
 (1,'Juan Diego','Maldonado','Mercado','ycervantes@gmail.com'),(2,'Bruno','Narvaez','Viera','nahuel.lovato@yahoo.com'),(3,'Dylan','Zavala','Cisneros','isandoval@hotmail.com'),(4,'David','Delatorre','Hernandez','carolina10@yahoo.com'),(5,'Josue','Lebron','Escobedo','emilia77@hotmail.com'),(6,'Luis','Barreto','Paredes','ucastañeda@yahoo.com'),(7,'Jorge','Veliz','Villegas','kgonzales@gmail.com'),(8,'Alonso','Sandoval','Santiago','manuela11@hotmail.com'),(9,'Sergio','Rivero','Piña','dmelendez@yahoo.com'),(10,'Joaquin','Llamas','Robledo','barrientos.sarasofia@gmail.com'),
 (11,'Jesus','Arroyo','Valdez','uzayas@hotmail.com'),(12,'Adrian','Vega','Lozada','juanesteban73@yahoo.com'),(13,'Dante','Guerra','Camarillo','nperales@gmail.com'),(14,'Emilio','Trujillo','Tejada','dominquez.isabella@yahoo.com'),(15,'Lorenzo','Rocha','Castellanos','isabella77@hotmail.com'),(16,'Simon','Iglesias','Cuellar','florencia98@hotmail.com'),(17,'Javier','Navarrete','Jaimes','renata01@yahoo.com'),(18,'Axel','Najera','Agosto','benjamin.cazares@gmail.com'),(19,'Alejandro','Marquez','Carrion','sergio.zapata@gmail.com'),(20,'Ivan','Pizarro','Longoria','hipolito.guerrero@yahoo.com'),
 (21,'Julian','Adorno','Davila','rico.fabiana@hotmail.com'),(22,'Maximiliano','Ojeda','Cavazos','jacobo29@yahoo.com'),(23,'Juan Esteban','Armendariz','Guzman','saragon@hotmail.com'),(24,'Juan Martin','Batista','Guerrero','ivan.matias@hotmail.com'),(25,'Emmanuel','Gamez','Teran','mariangel.botello@yahoo.com'),(26,'Diego','Macias','Ocampo','aragon.daniela@yahoo.com'),(27,'Juan Pablo','Alejandro','Cardenas','dposada@yahoo.com'),(28,'Matias','Ulloa','Escobar','mario.llamas@yahoo.com'),(29,'Valentino','Quesada','Colunga','gabriela.quintana@gmail.com'),(30,'Martin','Zayas','Brito','ragosto@hotmail.com'),
@@ -159,12 +189,20 @@ INSERT INTO `portafolio`.`cliente` VALUES
 (71,'Juan Sebastian','Sosa','Tapia','jeronimo03@yahoo.com'),(72,'Horacio','Valle','Calvillo','gabriel.saavedra@gmail.com'),(73,'Maximo','Merino','Lozano','ocampo.natalia@hotmail.com'),(74,'Christopher','Briones','Espinosa','znuñez@yahoo.com'),(75,'Leonardo','Zaragoza','Padilla','lautaro.calderon@yahoo.com'),(76,'Bautista','Ortiz','Arce','zaparicio@hotmail.com'),(77,'Felipe','Mayorga','Valladares','catalina.acosta@yahoo.com'),(78,'Lautaro','Canales','Arevalo','sara.heredia@hotmail.com'),(79,'Jacobo','alvarez','Morales','ortiz.silvana@hotmail.com'),(80,'Pedro','Chacon','Mota','treviño.florencia@hotmail.com'),
 (81,'Ignacio','Meraz','Betancourt','amelia.mendez@yahoo.com'),(82,'Samuel','Malave','Acuña','villanueva.fernando@gmail.com'),(83,'Benjamin','Alcala','Gastelum','alex01@yahoo.com'),(84,'Christian','Gracia','Rodarte','alexander.peña@yahoo.com'),(85,'Camilo','Guevara','Alonso','sebastian.deanda@hotmail.com'),(86,'Nahuel','Melgar','Cadena','zamora.anthony@hotmail.com'),(87,'Pablo','Jurado','Saldivar','esparza.alan@yahoo.com'),(88,'Jeronimo','Cotto','Benitez','benjamin.delapaz@yahoo.com'),(89,'Rodrigo','Zamudio','Olivas','david.quezada@yahoo.com'),(90,'Antonio','Arellano','Medrano','thiago59@hotmail.com'),
 (91,'Ian','Resendez','Loera','vela.luciana@hotmail.com'),(92,'Carlos','Cabrera','Medina','juandiego.montes@gmail.com'),(93,'Thiago','Fernandez','Peres','barrera.ariadna@yahoo.com'),(94,'Ricardo','Corral','Mora','nahuel95@yahoo.com'),(95,'Juan','Serna','Mondragon','peres.isabella@hotmail.com'),(96,'Facundo','Aleman','Palomo','diego.juarez@yahoo.com'),(97,'Vicente','Grijalva','Muñoz','qaraña@yahoo.com'),(98,'Cristobal','Caraballo','Esquivel','sauceda.julia@gmail.com'),(99,'Agustin','Mena','Cortes','jesus.pulido@yahoo.com'),(100,'Elias','Cardona','Tijerina','julia.meza@hotmail.com');
-/*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
+/*!40000 ALTER TABLE cliente ENABLE KEYS */;
 UNLOCK TABLES;
 
+alter table cliente add (
+    saldo_cartera NUMERIC (20, 2) default 0,
+    fecha_alta DATETIME null default CURRENT_TIMESTAMP,
+    fecha_baja DATETIME null,
+    fecha_cambio DATETIME null
+);
 
 
-INSERT INTO `portafolio`.`tipo_instrumento` (`descripcion`) 
+
+
+INSERT INTO tipo_instrumento (`descripcion`) 
 VALUES 
 ('Acciones Nacionales'),
 ('Acciones Extranjeras'),
@@ -175,7 +213,7 @@ VALUES
 ('Deuda Gubernamental')
 ;
 
-INSERT INTO `portafolio`.`tipo_valor` (`cve_tipo_valor`, `descripcion`)
+INSERT INTO tipo_valor (`cve_tipo_valor`, `descripcion`)
 VALUES 
 ('0', ' ACCIONES SEGUROS, FIANZAS Y ORGANIZACIONES AUXILIARES DE CReDITO '),
 ('1', ' ACCIONES '),
@@ -219,12 +257,10 @@ VALUES
 ('99', ' DEUDA ESTRUCTURADA DE ENTIDADES FINANCIERAS Y O SUBSIDIARIAS ');
 
 
-INSERT INTO `portafolio`.`tipo_movimiento` (`descripcion`, `deposito`)
+INSERT INTO tipo_movimiento (`descripcion`, `deposito`)
 VALUES 
 ('Deposito de Efectivo', 1),
 ('Retiro de Efectivo', 0),
-('Compra titulos', 0),
-('Venta titulos', 1),
 ('ABONO DIVIDENDO EMISORA EXTRANJERA', 1),
 ('Abono efectivo dividendo, cust. normal', 1),
 ('Deposito Titulos Split, Cust. Normal', 1),
@@ -235,7 +271,14 @@ VALUES
 
 
 
-INSERT INTO `portafolio`.`instrumento` (id_tipo_valor, simbolo, descripcion, isin, emisora, serie, id_tipo_instrumento) VALUES 
+INSERT INTO estatus_movimiento (`descripcion`)
+VALUES 
+('En proceso'),
+('Cancelada'),
+('Realizada');
+
+
+INSERT INTO instrumento (id_tipo_valor, simbolo, descripcion, isin, emisora, serie, id_tipo_instrumento) VALUES 
 (1, 'Efec *', 'Efectivo', 'Efectivo', 'Efec', '*', 1), 
 (2, 'AC*', 'ARCA CONTINENTAL, S.A.B. DE C.V.', 'MX01AC100006', 'AC', '*', 1), 
 (2, 'ACTINVRB', 'CORPORACION ACTINVER, S.A.B. DE C.V.', 'MX01AC0Q0007', 'ACTINVR', 'B', 1), 
@@ -403,33 +446,215 @@ INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actu
 
 
 
+SET @deposito_efectivo = 150000;
+
+insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
+VALUES (1, '2024-02-16',  '9:00', 1, 1, 1, @deposito_efectivo, 3);
+
+UPDATE cliente SET saldo_cartera = coalesce(saldo_cartera, 0) + @deposito_efectivo where id = 1;
+
+SET @deposito_efectivo = 250000;
+
+insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
+VALUES (2, '2024-02-16', '10:00', 2, 1, 1, @deposito_efectivo, 3);
+
+UPDATE cliente SET saldo_cartera = coalesce(saldo_cartera, 0) + @deposito_efectivo where id = 2;
+
+SET @deposito_efectivo = 200000;
+
+insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
+VALUES (3, '2024-02-16', '11:00', 3, 1, 1, @deposito_efectivo, 3);
+
+UPDATE cliente SET saldo_cartera = coalesce(saldo_cartera, 0) + @deposito_efectivo where id = 3;
+
+SET @deposito_efectivo = 350000;
+
+insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
+VALUES (4, '2024-02-16', '12:00', 4, 1, 1, @deposito_efectivo, 3);
+
+UPDATE cliente SET saldo_cartera = coalesce(saldo_cartera, 0) + @deposito_efectivo where id = 4;
+
+SET @deposito_efectivo = 450000;
+
+insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
+VALUES (5, '2024-02-16', '13:00', 5, 1, 1, @deposito_efectivo, 3);
+
+UPDATE cliente SET saldo_cartera = coalesce(saldo_cartera, 0) + @deposito_efectivo where id = 5;
 
 
 
-INSERT INTO `portafolio`.`portafolio`
-(`id_cliente`, `descripcion`, `fecha`, `monto_invertido`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`)
-VALUES
-(1, 'Portafolio Principal', '2024-02-14', 1000, 10, 1000, 1001, 1001);
 
-update `portafolio`.`portafolio` set `variacion_porcentual_historica` = (`precio_mercado`/`costo_promedio` - 1)*100
- where id >= 1;
 
-select * from portafolio;
 
-insert into movimiento (id_portafolio, id_instrumento, fecha, monto, id_tipo_movimiento)
-VALUES
-(1, 1, '2024-02-14', 1000, 1),
-(1, 1, '2024-02-15', 1000, 3);
 
+
+
+
+
+
+/*
+select I.*, 1, P.id_instrumento, P.precio_actual, P.fecha_precio_actual, FLOOR(1000 / P.precio_actual), 3 
+from instrumento  I
+JOIN ultimo_precio  P
+ON I.id = P.id_instrumento
+where P.id_instrumento >= 1
+AND P.fecha_precio_actual >= '2024-02-19'
+order by P.id_instrumento;
+*/
+
+
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+SET @id_cliente = 1;
+SET @id_portafolio = 1;
+SET @monto_transaccion = 11000;
+
+/*
+select @id_portafolio, id_instrumento, fecha_precio_actual, 
+1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
+round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2), 
+precio_actual*FLOOR(@monto_transaccion / precio_actual), 
+@monto_transaccion - precio_actual*FLOOR(@monto_transaccion / precio_actual)
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'AC*';
+*/
+
+-- razon_p_m = (Valor Mercado - Costo Promedio)*Titulos
+INSERT INTO portafolio
+(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
+`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
+(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
+	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
+    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'AC*');
+
+
+insert into transaccion (id_portafolio, id_instrumento, fecha, 
+id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
+(select @id_portafolio, id_instrumento, fecha_precio_actual, 
+		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
+		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
+		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
+		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'AC*');
+
+-- select sum(importe) from transaccion t where id_portafolio = @id_portafolio;
+
+update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
+	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+SET @id_cliente = 2;
+SET @id_portafolio = 2;
+SET @monto_transaccion = 12000;
+
+INSERT INTO portafolio
+(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
+`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
+(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
+	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
+    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'CEMEXCPO');
+
+insert into transaccion (id_portafolio, id_instrumento, fecha, 
+id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
+(select @id_portafolio, id_instrumento, fecha_precio_actual, 
+		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
+		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
+		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
+		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'CEMEXCPO');
+
+-- select sum(importe) from transaccion t where id_portafolio = @id_portafolio;
+
+update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
+	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+SET @id_cliente = 3;
+SET @id_portafolio = 3;
+SET @monto_transaccion = 13000;
+
+INSERT INTO portafolio
+(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
+`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
+(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
+	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
+    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'GCARSOA1');
+
+insert into transaccion (id_portafolio, id_instrumento, fecha, 
+id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
+(select @id_portafolio, id_instrumento, fecha_precio_actual, 
+		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
+		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
+		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
+		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'GCARSOA1');
+
+-- select sum(importe) from transaccion t where id_portafolio = @id_portafolio;
+
+update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
+	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+SET @id_cliente = 4;
+SET @id_portafolio = 4;
+SET @monto_transaccion = 14000;
+
+INSERT INTO portafolio
+(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
+`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
+(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
+	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
+    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'LIVEPOLC-1');
+
+insert into transaccion (id_portafolio, id_instrumento, fecha, 
+id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
+(select @id_portafolio, id_instrumento, fecha_precio_actual, 
+		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
+		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
+		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
+		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'LIVEPOLC-1');
+
+-- select sum(importe) from transaccion t where id_portafolio = @id_portafolio;
+
+update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
+	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+SET @id_cliente = 5;
+SET @id_portafolio = 5;
+SET @monto_transaccion = 15000;
+
+INSERT INTO portafolio
+(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
+`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
+(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
+	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
+    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'WALMEX*');
+
+insert into transaccion (id_portafolio, id_instrumento, fecha, 
+id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
+(select @id_portafolio, id_instrumento, fecha_precio_actual, 
+		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
+		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
+		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
+		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
+from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'WALMEX*');
+
+-- select sum(importe) from transaccion t where id_portafolio = @id_portafolio;
+
+update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
+	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+select * from cliente;
 select * from movimiento;
+select * from portafolio;
+select * from transaccion;
 
-INSERT INTO `portafolio`.`inversion`
-(`id_portafolio`, `id_instrumento`, `fecha`, `monto_invertido`, `titulos`,
-`costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`)
-VALUES
-(1, 2, '2024-02-15', 1000, 10, 1000, 1001, 1001);
-
-update `portafolio`.`inversion` set `variacion_porcentual_historica` = (`precio_mercado`/`costo_promedio` - 1)*100
- where id >= 1;
-
-select * from inversion;
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
