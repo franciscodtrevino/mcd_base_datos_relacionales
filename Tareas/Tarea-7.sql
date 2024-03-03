@@ -1,7 +1,7 @@
 /*
 Bases de Datos Relacionales
-2024-03-03
-Tarea 7
+2024-02-18
+Tarea 5
 
 Portafolio Financiero de Clientes
 
@@ -26,6 +26,12 @@ drop database if exists portafolio;
 create database portafolio;
 
 use portafolio;
+
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- 1.- El hallazgo principal es que falta dar de alta mas informacion de clientes y movimientos.
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 -- 2. Mejorar la Seguridad de la Contraseña
@@ -574,7 +580,7 @@ INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actu
 INSERT INTO `ultimo_precio` (`id_instrumento`, `fecha_precio_actual`, `hora_actual`, `precio_actual`, `volumen`, `importe`, `numero_operaciones`, `precio_maximo_dia`, `precio_minimo_dia`, `fecha_precio_anterior`, `precio_anterior`, `variacion_unitaria`, `variacion_porcentual`) (SELECT id, '2024-02-09', 1446, 12.29, 1, 12.29, 1,0, 100000000, '2024-02-09', 12.29, 0, 0 FROM instrumento where simbolo = 'JAVER*');
 
 
-
+/*
 SET @deposito_efectivo = 150000;
 
 insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
@@ -610,158 +616,225 @@ VALUES (5, '2024-02-16', '13:00', 5, 1, 1, @deposito_efectivo, 3);
 
 UPDATE cliente SET saldo_cartera = coalesce(saldo_cartera, 0) + @deposito_efectivo where id = 5;
 
-
-
-
-
-
-
-
-
-
-
-
-/*
-select I.*, 1, P.id_instrumento, P.precio_actual, P.fecha_precio_actual, FLOOR(1000 / P.precio_actual), 3 
-from instrumento  I
-JOIN ultimo_precio  P
-ON I.id = P.id_instrumento
-where P.id_instrumento >= 1
-AND P.fecha_precio_actual >= '2024-02-19'
-order by P.id_instrumento;
-*/
-
-
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-SET @id_cliente = 1;
-SET @id_portafolio = 1;
-SET @monto_transaccion = 11000;
-
-INSERT INTO portafolio
-(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
-`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
-(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
-	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
-    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'AC*');
-
-
-insert into transaccion (id_portafolio, id_instrumento, fecha, 
-id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
-(select @id_portafolio, id_instrumento, fecha_precio_actual, 
-		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
-		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
-		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
-		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'AC*');
-
-update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
-	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-SET @id_cliente = 2;
-SET @id_portafolio = 2;
-SET @monto_transaccion = 12000;
-
-INSERT INTO portafolio
-(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
-`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
-(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
-	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
-    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'CEMEXCPO');
-
-insert into transaccion (id_portafolio, id_instrumento, fecha, 
-id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
-(select @id_portafolio, id_instrumento, fecha_precio_actual, 
-		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
-		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
-		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
-		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'CEMEXCPO');
-
-update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
-	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-SET @id_cliente = 3;
-SET @id_portafolio = 3;
-SET @monto_transaccion = 13000;
-
-INSERT INTO portafolio
-(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
-`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
-(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
-	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
-    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'GCARSOA1');
-
-insert into transaccion (id_portafolio, id_instrumento, fecha, 
-id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
-(select @id_portafolio, id_instrumento, fecha_precio_actual, 
-		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
-		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
-		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
-		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'GCARSOA1');
-
-update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
-	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-SET @id_cliente = 4;
-SET @id_portafolio = 4;
-SET @monto_transaccion = 14000;
-
-INSERT INTO portafolio
-(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
-`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
-(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
-	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
-    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'LIVEPOLC-1');
-
-insert into transaccion (id_portafolio, id_instrumento, fecha, 
-id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
-(select @id_portafolio, id_instrumento, fecha_precio_actual, 
-		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
-		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
-		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
-		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'LIVEPOLC-1');
-
-update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
-	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-SET @id_cliente = 5;
-SET @id_portafolio = 5;
-SET @monto_transaccion = 15000;
-
-INSERT INTO portafolio
-(`id_cliente`, `id_instrumento`, `titulos`, `costo_promedio`, `precio_mercado`, `precio_promedio_porcentual`, 
-`valor_mercado`, `razon_p_m`, `variacion_porcentual_historica`, `variacion_porcentual_diaria`, `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
-(select @id_cliente, id_instrumento, FLOOR(@monto_transaccion / precio_actual), precio_actual, precio_actual, precio_actual, 
-	precio_actual*FLOOR(@monto_transaccion / precio_actual), 0,
-    0, 0, precio_actual*FLOOR(@monto_transaccion / precio_actual), 100, fecha_precio_actual
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'WALMEX*');
-
-insert into transaccion (id_portafolio, id_instrumento, fecha, 
-id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
-(select @id_portafolio, id_instrumento, fecha_precio_actual, 
-		1, precio_actual*FLOOR(@monto_transaccion / precio_actual), precio_actual, 0, 0, 0, 0, 
-		round(0.0025*precio_actual*FLOOR(@monto_transaccion / precio_actual), 2),
-		precio_actual*FLOOR(@monto_transaccion / precio_actual), 
-		(select saldo_cartera from cliente c where c.id = @id_cliente) - precio_actual*FLOOR(@monto_transaccion / precio_actual)
-from instrumento  I JOIN ultimo_precio  P ON I.id = P.id_instrumento where I.simbolo = 'WALMEX*');
-
-update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_portafolio = @id_portafolio),
-	fecha_cambio=CURRENT_TIMESTAMP() where id = @id_cliente;
 */
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- 4. Índices para Mejorar el Rendimiento
+-- Índices en Campos de Búsqueda: Si hay campos específicos en los que frecuentemente buscas (como correo_electronico), el añadir índices a estos campos para mejorar el rendimiento de las consultas. 
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+CREATE INDEX idx_cliente_correo_electronico ON cliente (correo_electronico);
+CREATE INDEX idx_cliente_id_cliente ON movimiento (id_cliente);
+CREATE INDEX idx_movimiento_id_cliente ON movimiento (id_cliente);
+CREATE INDEX idx_movimiento_fecha ON movimiento (fecha);
+
+CREATE INDEX idx_transaccion_id_cliente ON transaccion (id_cliente);
+CREATE INDEX idx_transaccion_id_instrumento ON transaccion (id_instrumento);
+CREATE INDEX idx_transaccion_fecha ON transaccion (fecha);
+CREATE INDEX idx_transaccion_id_tipo_transaccion ON transaccion (id_tipo_transaccion);
+
+CREATE INDEX idx_historico_precios_id_instrumento ON historico_precios (id_instrumento);
+CREATE INDEX idx_historico_precios_fecha ON historico_precios (fecha);
+
+CREATE INDEX idx_ultimo_precio_id_instrumento ON ultimo_precio (id_instrumento);
+CREATE INDEX idx_ultimo_precio_fecha_precio_actual ON ultimo_precio (fecha_precio_actual);
+
+
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- 1.- El hallazgo principal es que falta dar de alta mas informacion para los diferentes clientes e instrumentos bursatiles.
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+use portafolio;
+
+use portafolio;
+
+DROP PROCEDURE if exists InsertarTransaccionesAleatorias;
+
+DROP PROCEDURE if exists InsertarTransaccionesAleatorias;
+
+DELIMITER $$
+
+CREATE PROCEDURE InsertarTransaccionesAleatorias(
+    IN cantidadClientes INT,
+    IN cantidadTransaccionesPorCliente INT,
+    IN trace tinyint
+)
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE j INT;
+    DECLARE id_cliente_proceso INT;
+    DECLARE deposito_efectivo_proceso DECIMAL(10,2);
+    -- DECLARE id_portafolio_proceso INT;
+    DECLARE id_instrumento_proceso INT;
+    DECLARE monto_transaccion_proceso DECIMAL(10,2);
+	DECLARE existeRegistro INT;
+	DECLARE ultimoID INT;
+    DECLARE porcentaje_comision_proceso DECIMAL(10,4);
+    
+	SET porcentaje_comision_proceso = 0.0025;
+    
+	START TRANSACTION;
+    
+    -- Iterar a través de cada uno de los clientes especificados
+    WHILE i <= cantidadClientes DO
+        SET id_cliente_proceso = i;
+        SET j = 1;
+
+		SET deposito_efectivo_proceso = FLOOR(1000 + (RAND() * 1000000));
+
+		insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
+		VALUES (id_cliente_proceso, current_date(),  current_time(), 1, 1, 1, deposito_efectivo_proceso, 3);
+
+		UPDATE cliente SET saldo_cartera = (SELECT sum(monto) from movimiento B where B.id_cliente = id_cliente_proceso and B.id_tipo_movimiento = 1)  
+         where id = id_cliente_proceso;
+        
+		IF (trace = 1) THEN
+			SELECT * FROM cliente where id = id_cliente_proceso;
+		END IF;
+        -- Insertar la cantidad especificada de transacciones aleatorias por cliente
+        WHILE j <= cantidadTransaccionesPorCliente DO
+            -- Seleccionar un instrumento aleatorio entre los disponibles
+			SELECT id_instrumento INTO id_instrumento_proceso FROM ultimo_precio ORDER BY RAND() LIMIT 1;
+
+            -- Definir un monto de transacción aleatorio para el ejemplo
+            SET monto_transaccion_proceso = FLOOR(1000 + (RAND() * 10000));
+            
+            IF (trace = 1) THEN
+				SELECT id_cliente_proceso as 'id_cliente_proceso', id_instrumento_proceso as 'id_instrumento_proceso';
+
+				select id_cliente_proceso, id_instrumento_proceso, 
+						current_timestamp(), -- fecha_precio_actual, 
+						1, P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), P.precio_actual, 0, 0, 0, 0, 
+						round(porcentaje_comision_proceso*P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), 2),
+						P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), 
+						(select saldo_cartera from cliente c where c.id = id_cliente_proceso) - P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual)
+				from instrumento  I 
+				JOIN ultimo_precio  P ON I.id = P.id_instrumento 
+				WHERE I.id = id_instrumento_proceso LIMIT 1;
+			END IF;
+            
+			insert into transaccion (id_cliente, id_instrumento, fecha, 
+			id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
+			(select id_cliente_proceso, id_instrumento_proceso, 
+					current_timestamp(), -- fecha_precio_actual, 
+					1, P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), P.precio_actual, 0, 0, 0, 0, 
+					round(porcentaje_comision_proceso*P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), 2),
+					P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), 
+					(select saldo_cartera from cliente c where c.id = id_cliente_proceso) - P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual)
+			from instrumento  I 
+            JOIN ultimo_precio  P ON I.id = P.id_instrumento 
+            WHERE I.id = id_instrumento_proceso);
+
+			IF ROW_COUNT() > 0 THEN
+				SET ultimoID = LAST_INSERT_ID();
+				IF (trace = 1) THEN
+					SELECT 'El INSERT fue exitoso.' as 'Mensaje', ultimoID as 'ultimoID';
+				END IF;
+				-- select sum(importe) from transaccion t where id_portafolio = id_portafolio_proceso;
+
+				-- Se actualiza el saldo de la cartera del cliente reduciendo el importe de la transaccion de la compra del instrumento.
+                update cliente set 
+					saldo_cartera = saldo_cartera - (select importe from transaccion t WHERE t.id = ultimoID),
+					fecha_cambio=CURRENT_TIMESTAMP() where id = id_cliente_proceso;
+
+				-- /////////////////////////////////////////////////////////////////////////////////////
+			
+				IF (trace = 1) THEN
+					SELECT
+						id_cliente_proceso, id_instrumento_proceso, titulos, 
+						precio + impuestos + comision,  
+						precio,  precio, 
+						importe, 0, 0, 0, 
+						importe, 0, current_timestamp()
+					  FROM transaccion t
+					 WHERE t.id = ultimoID;
+				END IF;
+
+				-- SELECT COUNT(*) INTO existeRegistro FROM transaccion t WHERE t.id_cliente = id_cliente_proceso and t.id_instrumento = id_instrumento_proceso;
+				-- SELECT COUNT(*) INTO existeRegistro FROM transaccion t WHERE t.id = ultimoID;
+				SELECT COUNT(*) INTO existeRegistro FROM portafolio p WHERE p.id_cliente = id_cliente_proceso and p.id_instrumento = id_instrumento_proceso;
+                
+				IF existeRegistro = 0 THEN
+					-- INSERT portafolio
+					IF (trace = 1) THEN
+						SELECT 1 as 'IF_INSERT';
+					END IF;
+                    
+					/* insert into transaccion (id_instrumento, fecha, 
+					id_tipo_transaccion, 
+					titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo) */
+					INSERT INTO portafolio
+					(`id_cliente`, `id_instrumento`,  `titulos`, 
+					`costo_promedio`, 
+					`precio_mercado`,  `precio_promedio_porcentual`, 
+					`valor_mercado`, `razon_p_m`, 
+					`variacion_porcentual_historica`, `variacion_porcentual_diaria`, 
+					`importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
+					(SELECT
+						id_cliente_proceso, id_instrumento_proceso, titulos, 
+						precio + impuestos + comision,  
+						precio,  precio, 
+						importe, 0, 0, 0, 
+						importe, 0, current_timestamp()
+					  FROM transaccion t
+					 WHERE t.id = ultimoID );
+				   
+				else
+					-- UPDATE portafolio
+					/*
+					SELECT *
+					  FROM transaccion t
+					 WHERE t.id_cliente = id_cliente_proceso
+					   and t.id_instrumento = id_instrumento_proceso
+					  ;
+					  */
+					IF (trace = 1) THEN
+						SELECT 1 as 'ELSE_UPDATE';
+					END IF;
+				end if;
+
+				IF (trace = 1) THEN
+					SELECT * FROM portafolio;
+				END IF;
+            
+			ELSE
+				-- El INSERT falló.
+				IF (trace = 1) THEN
+					SELECT 'El INSERT falló.' as 'Mensaje';
+				END IF;
+			END IF;
+			-- /////////////////////////////////////////////////////////////////////////////////////
+            
+            -- Incrementar el contador de transacciones
+            SET j = j + 1;
+        END WHILE;
+
+		IF (trace = 1) THEN
+			SELECT * FROM cliente where id = id_cliente_proceso;
+		END IF;
+
+        -- Incrementar el contador de clientes
+        SET i = i + 1;
+    END WHILE;
+    
+    COMMIT;
+END$$
+
+DELIMITER ;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- Generar para 100 clientes 100 tramsacciones aleatorias 
+CALL InsertarTransaccionesAleatorias(100, 100, 0);
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 select * from cliente;
 select * from movimiento;
@@ -789,7 +862,6 @@ select c.nombre, c.apellido_paterno, c.apellido_materno,
   ;
 
 
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 -- 1. Usar funciones de agregación para calcular:
 --    a. Conteo de frecuencias o media
@@ -856,147 +928,6 @@ LIMIT 1;
 
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 4. Índices para Mejorar el Rendimiento
--- Índices en Campos de Búsqueda: Si hay campos específicos en los que frecuentemente buscas (como correo_electronico), el añadir índices a estos campos para mejorar el rendimiento de las consultas. 
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-CREATE INDEX idx_cliente_correo_electronico ON cliente (correo_electronico);
-CREATE INDEX idx_cliente_id_cliente ON movimiento (id_cliente);
-CREATE INDEX idx_movimiento_id_cliente ON movimiento (id_cliente);
-CREATE INDEX idx_movimiento_fecha ON movimiento (fecha);
-
-CREATE INDEX idx_transaccion_id_cliente ON transaccion (id_cliente);
-CREATE INDEX idx_transaccion_id_instrumento ON transaccion (id_instrumento);
-CREATE INDEX idx_transaccion_fecha ON transaccion (fecha);
-CREATE INDEX idx_transaccion_id_tipo_transaccion ON transaccion (id_tipo_transaccion);
-
-CREATE INDEX idx_historico_precios_id_instrumento ON historico_precios (id_instrumento);
-CREATE INDEX idx_historico_precios_fecha ON historico_precios (fecha);
-
-CREATE INDEX idx_ultimo_precio_id_instrumento ON ultimo_precio (id_instrumento);
-CREATE INDEX idx_ultimo_precio_fecha_precio_actual ON ultimo_precio (fecha_precio_actual);
-
-
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 1.- El hallazgo principal es que falta dar de alta mas informacion para los diferentes clientes e instrumentos bursatiles.
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-DROP PROCEDURE if exists InsertarTransaccionesAleatorias;
-
-DELIMITER $$
-
-CREATE PROCEDURE InsertarTransaccionesAleatorias(
-    IN cantidadClientes INT,
-    IN cantidadTransaccionesPorCliente INT
-)
-BEGIN
-    DECLARE i INT DEFAULT 1;
-    DECLARE j INT;
-    DECLARE id_cliente_proceso INT;
-    DECLARE id_portafolio_proceso INT;
-    DECLARE id_instrumento_proceso INT;
-    DECLARE monto_transaccion_proceso DECIMAL(10,2);
-
-    -- Iterar a través de cada uno de los clientes especificados
-    WHILE i <= cantidadClientes DO
-        SET id_cliente_proceso = i;
-        SET j = 1;
-
-        -- Insertar la cantidad especificada de transacciones aleatorias por cliente
-        WHILE j <= cantidadTransaccionesPorCliente DO
-            -- Seleccionar un instrumento aleatorio entre los disponibles
-            -- Asegúrate de ajustar este rango si el número de instrumentos cambia
-            -- SET id_instrumento_proceso = FLOOR(2 + (RAND() * (SELECT COUNT(*) FROM instrumento)));
-            SET id_instrumento_proceso = FLOOR(2 + (RAND() * (SELECT COUNT(*) FROM ultimo_precio)));
-
-            -- Definir un monto de transacción aleatorio para el ejemplo
-            SET monto_transaccion_proceso = FLOOR(1000 + (RAND() * 20000));
-            SELECT id_cliente_proceso as 'id_cliente_proceso', id_instrumento_proceso as 'id_instrumento_proceso';
-
-			insert into transaccion (id_cliente, id_instrumento, fecha, 
-			id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
-			(select id_cliente_proceso, id_instrumento_proceso, 
-					CURRENT_DATE, -- fecha_precio_actual, 
-					1, P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), P.precio_actual, 0, 0, 0, 0, 
-					round(0.0025*P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), 2),
-					P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual), 
-					(select saldo_cartera from cliente c where c.id = id_cliente_proceso) - P.precio_actual*FLOOR(monto_transaccion_proceso / P.precio_actual)
-			from instrumento  I 
-            JOIN ultimo_precio  P ON I.id = P.id_instrumento 
-            WHERE I.id = id_instrumento_proceso LIMIT 1);
-
-			-- select sum(importe) from transaccion t where id_portafolio = id_portafolio_proceso;
-
-			update cliente set saldo_cartera = saldo_cartera - (select sum(importe) from transaccion t where id_cliente = id_cliente_proceso),
-				fecha_cambio=CURRENT_TIMESTAMP() where id = id_cliente_proceso;
-
-			-- /////////////////////////////////////////////////////////////////////////////////////
-            -- MySQL tiene UPSERTs?
-			SELECT *
-              FROM transaccion t
-             WHERE t.id_cliente = id_cliente_proceso
-               and t.id_instrumento = id_instrumento_proceso;
-               
-			if not exists (SELECT 1
-              FROM transaccion t
-             WHERE t.id_cliente = id_cliente_proceso
-               and t.id_instrumento = id_instrumento_proceso) then
-				-- INSERT portafolio
-				SELECT 1 as 'IF_INSERT';
-				SELECT *
-				  FROM transaccion t
-				 WHERE t.id_cliente = id_cliente_proceso
-				   and t.id_instrumento = id_instrumento_proceso
-				  ;
-                
-                /* insert into transaccion (id_instrumento, fecha, 
-				id_tipo_transaccion, 
-                titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo) */
-				INSERT INTO portafolio
-				(`id_cliente`, `id_instrumento`,  `titulos`, 
-                `costo_promedio`, 
-                `precio_mercado`,  `precio_promedio_porcentual`, 
-				`valor_mercado`, `razon_p_m`, 
-                `variacion_porcentual_historica`, `variacion_porcentual_diaria`, 
-                `importe_por_costo`, `porcentaje_cartera`, `fecha_actualizacion`)
-				(SELECT
-					id_cliente_proceso, id_instrumento_proceso, titulos, 
-                    precio + impuestos + comision,  
-                    precio,  precio, 
-                    importe, 0, 0, 0, 
-                    importe, 0, CURRENT_DATE
-				  FROM transaccion t
-				 WHERE t.id_cliente = id_cliente_proceso
-				   and t.id_instrumento = id_instrumento_proceso );
-               
-            else
-				-- UPDATE portafolio
-                /*
-				SELECT *
-				  FROM transaccion t
-				 WHERE t.id_cliente = id_cliente_proceso
-				   and t.id_instrumento = id_instrumento_proceso
-				  ;
-                  */
-				SELECT 1 as 'ELSE_UPDATE';
-            end if;
-
-		   SELECT * FROM portafolio;
-            
-			-- /////////////////////////////////////////////////////////////////////////////////////
-            
-            -- Incrementar el contador de transacciones
-            SET j = j + 1;
-        END WHILE;
-
-        -- Incrementar el contador de clientes
-        SET i = i + 1;
-    END WHILE;
-END$$
-
-DELIMITER ;
-
-CALL InsertarTransaccionesAleatorias(1, 1);
 
 /*
 -- 3. Utiliza subconsultas para responder preguntas relevantes de tus datos
@@ -1014,4 +945,3 @@ hacia la tabla de clientes para tener identificado el id del cliente.
 La tabla de portafolio debe estar en constante recalculo dependiendo de las transacciones y/o movimientos, pero tambien en los cambios de los ultimos precios de los instrumentos.
 
 */
-
