@@ -648,10 +648,6 @@ CREATE INDEX idx_ultimo_precio_fecha_precio_actual ON ultimo_precio (fecha_preci
 
 use portafolio;
 
-use portafolio;
-
-DROP PROCEDURE if exists InsertarTransaccionesAleatorias;
-
 DROP PROCEDURE if exists InsertarTransaccionesAleatorias;
 
 DELIMITER $$
@@ -666,7 +662,7 @@ BEGIN
     DECLARE j INT;
     DECLARE id_cliente_proceso INT;
     DECLARE deposito_efectivo_proceso DECIMAL(10,2);
-    -- DECLARE id_portafolio_proceso INT;
+    DECLARE saldo_cartera_proceso DECIMAL(10,2);
     DECLARE id_instrumento_proceso INT;
     DECLARE monto_transaccion_proceso DECIMAL(10,2);
 	DECLARE existeRegistro INT;
@@ -678,11 +674,11 @@ BEGIN
 	START TRANSACTION;
     
     -- Iterar a través de cada uno de los clientes especificados
-    WHILE i <= cantidadClientes DO
+    Clientes: WHILE i <= cantidadClientes DO
         SET id_cliente_proceso = i;
         SET j = 1;
 
-		SET deposito_efectivo_proceso = FLOOR(1000 + (RAND() * 1000000));
+		SET deposito_efectivo_proceso = 500000 + FLOOR(1000 + (RAND() * 1000000));
 
 		insert into movimiento (id_cliente, fecha, hora, folio, id_tipo_movimiento, id_instrumento, monto, id_estatus_movimiento)
 		VALUES (id_cliente_proceso, current_date(),  current_time(), 1, 1, 1, deposito_efectivo_proceso, 3);
@@ -694,12 +690,20 @@ BEGIN
 			SELECT * FROM cliente where id = id_cliente_proceso;
 		END IF;
         -- Insertar la cantidad especificada de transacciones aleatorias por cliente
-        WHILE j <= cantidadTransaccionesPorCliente DO
+        TransaccionesPorCliente: WHILE j <= cantidadTransaccionesPorCliente DO
             -- Seleccionar un instrumento aleatorio entre los disponibles
 			SELECT id_instrumento INTO id_instrumento_proceso FROM ultimo_precio ORDER BY RAND() LIMIT 1;
 
             -- Definir un monto de transacción aleatorio para el ejemplo
             SET monto_transaccion_proceso = FLOOR(1000 + (RAND() * 10000));
+            
+			SELECT saldo_cartera INTO saldo_cartera_proceso FROM cliente C WHERE C.id = id_cliente_proceso;
+            
+            if saldo_cartera_proceso <= 0 then
+				set monto_transaccion_proceso = 0;
+            elseif monto_transaccion_proceso > saldo_cartera_proceso then
+				set monto_transaccion_proceso = saldo_cartera_proceso;
+            end if;
             
             IF (trace = 1) THEN
 				SELECT id_cliente_proceso as 'id_cliente_proceso', id_instrumento_proceso as 'id_instrumento_proceso';
@@ -714,6 +718,12 @@ BEGIN
 				JOIN ultimo_precio  P ON I.id = P.id_instrumento 
 				WHERE I.id = id_instrumento_proceso LIMIT 1;
 			END IF;
+
+			IF (monto_transaccion_proceso <= 0) THEN
+				-- Sale del ciclo WHILE
+				SELECT 'Sale del ciclo WHILE' as 'Mensaje', saldo_cartera_proceso as 'saldo_cartera_proceso';
+				LEAVE TransaccionesPorCliente;
+            END IF;
             
 			insert into transaccion (id_cliente, id_instrumento, fecha, 
 			id_tipo_transaccion, titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo)
@@ -752,19 +762,13 @@ BEGIN
 					 WHERE t.id = ultimoID;
 				END IF;
 
-				-- SELECT COUNT(*) INTO existeRegistro FROM transaccion t WHERE t.id_cliente = id_cliente_proceso and t.id_instrumento = id_instrumento_proceso;
-				-- SELECT COUNT(*) INTO existeRegistro FROM transaccion t WHERE t.id = ultimoID;
 				SELECT COUNT(*) INTO existeRegistro FROM portafolio p WHERE p.id_cliente = id_cliente_proceso and p.id_instrumento = id_instrumento_proceso;
                 
 				IF existeRegistro = 0 THEN
-					-- INSERT portafolio
 					IF (trace = 1) THEN
 						SELECT 1 as 'IF_INSERT';
 					END IF;
                     
-					/* insert into transaccion (id_instrumento, fecha, 
-					id_tipo_transaccion, 
-					titulos, precio, tasa, plazo, intereses, impuestos, comision, importe, saldo) */
 					INSERT INTO portafolio
 					(`id_cliente`, `id_instrumento`,  `titulos`, 
 					`costo_promedio`, 
@@ -782,17 +786,18 @@ BEGIN
 					 WHERE t.id = ultimoID );
 				   
 				else
-					-- UPDATE portafolio
-					/*
-					SELECT *
-					  FROM transaccion t
-					 WHERE t.id_cliente = id_cliente_proceso
-					   and t.id_instrumento = id_instrumento_proceso
-					  ;
-					  */
 					IF (trace = 1) THEN
 						SELECT 1 as 'ELSE_UPDATE';
 					END IF;
+                    
+					UPDATE portafolio SET 
+						titulos = (SELECT sum(titulos) FROM transaccion t where t.id_cliente = id_cliente_proceso and t.id_instrumento = id_instrumento_proceso), 
+						costo_promedio = (SELECT sum(precio + impuestos + comision) FROM transaccion t where t.id_cliente = id_cliente_proceso and t.id_instrumento = id_instrumento_proceso), 
+						precio_mercado = (SELECT sum(precio) FROM transaccion t where t.id_cliente = id_cliente_proceso and t.id_instrumento = id_instrumento_proceso), 
+						fecha_actualizacion = CURRENT_TIMESTAMP()
+                    WHERE id_cliente = id_cliente_proceso
+                    and id_instrumento = id_instrumento_proceso;
+                    
 				end if;
 
 				IF (trace = 1) THEN
@@ -828,27 +833,13 @@ DELIMITER ;
 -- Generar para 100 clientes 100 tramsacciones aleatorias 
 CALL InsertarTransaccionesAleatorias(100, 100, 0);
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+/*
 select * from cliente;
 select * from movimiento;
 select * from portafolio;
 select * from transaccion;
-
+*/
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-select c.nombre, c.apellido_paterno, c.apellido_materno,
-	p.* 
-  from cliente c
-  join portafolio p
-  on c.id = p.id_cliente
-  order by c.nombre, c.apellido_paterno, c.apellido_materno;
 
 -- Historial de Transacciones
 select c.nombre, c.apellido_paterno, c.apellido_materno,
@@ -858,8 +849,15 @@ select c.nombre, c.apellido_paterno, c.apellido_materno,
   join transaccion t
   on c.id = t.id_cliente
   join tipo_transaccion tt
-  on t.id_tipo_transaccion = tt.id
-  ;
+  on t.id_tipo_transaccion = tt.id  ;
+
+-- Portafolio de Clientes
+select c.nombre, c.apellido_paterno, c.apellido_materno,
+	p.* 
+  from cliente c
+  join portafolio p
+  on c.id = p.id_cliente
+  order by c.nombre, c.apellido_paterno, c.apellido_materno;
 
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -928,20 +926,65 @@ LIMIT 1;
 
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
 -- 3. Utiliza subconsultas para responder preguntas relevantes de tus datos
--- Pregunta relevante 1: Como asegurar la consistencia de la informacion, en los saldos de los clientes vs movimientos
 
--- Pregunta relevante 2: Como asegurar la consistencia de la informacion, en los saldos de los clientes vs trnascciones
+-- Como asegurar la consistencia de la informacion, en los saldos de los clientes vs movimientos y transacciones
+-- select * from tipo_movimiento;
 
--- Pregunta relevante 3: 
+SELECT 
+	C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) AS 'suma_depositos',
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0)  AS 'suma_retiros'
+  from cliente C
+ order by id;
 
+UPDATE cliente SET saldo_cartera = 
+					COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = cliente.id and B.id_tipo_movimiento = 1), 0) -
+					COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = cliente.id and B.id_tipo_movimiento = 2), 0)
+	WHERE id >= 1;
 
-4. Hallazgos
-Se hace una mejora y refinamiento al modelo de datos en cuanto a la tabla de transaccion para quitar una llave foranea hacia la tabla de portafolio.
-El problema de quitar la referencia de la llave foranea de portafolio, se pierde la relacion con el cliente, por lo que se agrega una llave foranea 
-hacia la tabla de clientes para tener identificado el id del cliente.
-La tabla de portafolio debe estar en constante recalculo dependiendo de las transacciones y/o movimientos, pero tambien en los cambios de los ultimos precios de los instrumentos.
+-- ¿Cómo asegurar la consistencia de la informacion, en los saldos de los clientes vs trnascciones?
+-- Se actualiza el saldo de la cartera del cliente reduciendo el importe de la transaccion de la compra del instrumento.
 
-*/
+-- select * from tipo_transaccion;
+
+SELECT 
+	C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0)  AS 'suma_compras_acciones',
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'suma_ventas_acciones'
+  from cliente C
+ order by C.id;
+
+ UPDATE cliente SET saldo_cartera = saldo_cartera -
+						COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = cliente.id and T.id_tipo_transaccion = 1), 0) +
+						COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = cliente.id and T.id_tipo_transaccion = 4), 0)
+	WHERE id >= 1;
+
+SELECT 
+	C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) -
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0) -
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0) +
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'saldo_cartera_teorico',
+
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) AS 'suma_depositos',
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0)  AS 'suma_retiros',
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0)  AS 'suma_compras_acciones',
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'suma_ventas_acciones'
+  from cliente C
+ order by id;
+
+SELECT 
+	C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) -
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0) -
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0) +
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'saldo_cartera_teorico',
+
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) AS 'suma_depositos',
+	COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0)  AS 'suma_retiros',
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0)  AS 'suma_compras_acciones',
+	COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'suma_ventas_acciones'
+  from cliente C
+  where C.saldo_cartera < 0
+ order by C.saldo_cartera asc;
