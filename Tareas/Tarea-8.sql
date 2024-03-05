@@ -1,7 +1,7 @@
 /*
 Bases de Datos Relacionales
-2024-03-03
-Tarea 7
+2024-03-10
+Tarea 8
 
 Portafolio Financiero de Clientes
 
@@ -26,33 +26,6 @@ drop database if exists portafolio;
 create database portafolio;
 
 use portafolio;
-
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 1.- El hallazgo principal es que falta dar de alta mas informacion de clientes y movimientos.
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 2. Mejorar la Seguridad de la Contraseña
--- Hash de Contraseñas: Almacenar contraseñas en texto plano es una mala práctica en términos de seguridad. 
--- Se recomienda almacenar un hash de la contraseña en lugar del texto plano. 
---    contrasena VARCHAR(255),
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 3. Extender la Longitud del Correo Electrónico
--- Longitud de Correo Electrónico: El estándar RFC 5321 especifica una longitud máxima de 254 caracteres para las direcciones de ### correo electrónico. 
---    correo_electronico VARCHAR(255),
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 4. Índices para Mejorar el Rendimiento
--- Índices en Campos de Búsqueda: Si hay campos específicos en los que frecuentemente buscas (como correo_electronico), el añadir ### índices a estos campos para mejorar el rendimiento de las consultas. 
-
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
--- 5. Uso de TIMESTAMP vs. DATETIME
--- Modificar los campos que tienen tipo de dato DATETIME a TIMESTAMP porque sirve para incrementar la precisión y la zona horaria.
--- ///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 create table cliente  (
     id INT  auto_increment primary key,
@@ -831,7 +804,7 @@ DELIMITER ;
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 -- Generar para 100 clientes 100 tramsacciones aleatorias 
-CALL InsertarTransaccionesAleatorias(100, 100, 0);
+CALL InsertarTransaccionesAleatorias(100, 5, 0);
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 select * from cliente;
@@ -927,9 +900,9 @@ LIMIT 1;
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 -- 3. Utiliza subconsultas para responder preguntas relevantes de tus datos
-
 -- Como asegurar la consistencia de la informacion, en los saldos de los clientes vs movimientos y transacciones
 -- select * from tipo_movimiento;
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT 
 	C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
@@ -988,3 +961,146 @@ SELECT
   from cliente C
   where C.saldo_cartera < 0
  order by C.saldo_cartera asc;
+
+
+
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+Tarea 8
+1. Crear vistas (VIEW) sobre consultas significativas, recurrentes, etc. que
+a. incluyan un JOIN
+b. incluyan un LEFT JOIN
+c. incluyan un RIGHT JOIN
+d. incluyan una subconsulta
+2. [2 puntos] Investigar y crear al menos un disparador (TRIGGER) de inserción, actualización o eliminación 
+3. Guarda tus consultas como archivo SQL en tu repositorio
+4. [3 puntos] Explicar qué hace cada vista y disparador que utilizas y qué beneficios para tu BD tiene crearlos en un archivo PDF o MD que subas a tu repositorio
+5. Elegir tema para Proyecto Integrador de Aprendizaje
+
+https://www.mysqltutorial.org/mysql-triggers/
+*/
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- 1. Crear vistas (VIEW) sobre consultas significativas, recurrentes, etc. que
+-- ///////////////////////////////////////////////////////////////////////////
+-- a. incluyan un JOIN
+-- ///////////////////////////////////////////////////////////////////////////
+
+CREATE VIEW v_movimientos_de_usuarios AS
+	select 
+		m.id as 'id_movimiento', tm.descripcion as 'tipo_movimiento', m.fecha, m.hora, m.id_instrumento, i.descripcion as 'instrumento', m.monto,
+        c.id as 'id_cliente', c.nombre, c.apellido_paterno, c.apellido_materno
+	  from cliente c
+	  join movimiento m
+	  on C.id = m.id_cliente
+	  join tipo_movimiento tm
+	  on m.id_tipo_movimiento = tm.id
+	  join instrumento i
+	  on m.id_instrumento = i.id
+	  order by 
+		c.id, c.nombre, c.apellido_paterno, c.apellido_materno, m.id ;
+
+select * from v_movimientos_de_usuarios;
+
+-- b. incluyan un LEFT JOIN
+
+CREATE VIEW v_instrumentos_sin_historico_precios AS
+	select i.*, hp.fecha, hp.precio_cierre, hp.precio_apertura, hp.precio_minimo, hp.precio_maximo, hp.fecha_actualizacion
+	  from instrumento i
+      left outer join historico_precios hp
+	  on i.id = hp.id_instrumento
+	  order by i.simbolo;
+
+select * from v_instrumentos_sin_historico_precios;
+
+
+-- c. incluyan un RIGHT JOIN
+CREATE VIEW v_instrumentos_sin_ultimos_precios AS
+	select up.id_instrumento, up.fecha_precio_actual, up.hora_actual, up.precio_actual, up.volumen, up.importe, up.numero_operaciones, 
+    up.precio_maximo_dia, up.precio_minimo_dia, up.fecha_precio_anterior, up.precio_anterior, up.variacion_unitaria, up.variacion_porcentual, up.fecha_actualizacion,
+    i.*
+    
+	  from ultimo_precio up
+      right outer join instrumento i
+	  on up.id_instrumento = i.id
+	  order by i.simbolo;
+
+select * from v_instrumentos_sin_ultimos_precios;
+
+
+
+-- d. incluyan una subconsulta
+CREATE VIEW v_depositos_retiros_de_clientes AS
+		SELECT 
+			C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+			COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) AS 'suma_depositos',
+			COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0)  AS 'suma_retiros'
+		  from cliente C
+		 order by id;
+
+select * from v_depositos_retiros_de_clientes;
+
+CREATE VIEW v_transacciones_de_clientes AS
+		SELECT 
+			C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+			COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0)  AS 'suma_compras_acciones',
+			COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'suma_ventas_acciones'
+		  from cliente C
+		 order by C.id;
+
+select * from v_transacciones_de_clientes;
+
+
+CREATE VIEW v_saldos_transacciones_operaciones_de_clientes AS
+		SELECT 
+			C.id, C.nombre, C.apellido_paterno, C.apellido_materno, C.saldo_cartera,
+			COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) -
+			COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0) -
+			COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0) +
+			COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'saldo_cartera_teorico',
+
+			COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 1), 0) AS 'suma_depositos',
+			COALESCE ((SELECT sum(monto) from movimiento B where B.id_cliente = C.id and B.id_tipo_movimiento = 2), 0)  AS 'suma_retiros',
+			COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 1), 0)  AS 'suma_compras_acciones',
+			COALESCE ((SELECT sum(importe) from transaccion T where T.id_cliente = C.id and T.id_tipo_transaccion = 4), 0)  AS 'suma_ventas_acciones'
+		  from cliente C
+		 order by id;
+
+select * from v_saldos_transacciones_operaciones_de_clientes;
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
+-- 2. [2 puntos] Investigar y crear al menos un disparador (TRIGGER) de inserción, actualización o eliminación 
+
+DELIMITER $$
+CREATE TRIGGER trigger_before_cliente_insert
+BEFORE INSERT ON cliente
+FOR EACH ROW
+BEGIN
+    DECLARE contador INT;
+    SELECT COUNT(*) INTO contador FROM cliente
+     WHERE correo_electronico = NEW.correo_electronico;
+    IF contador > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Este correo electronico ya ha sido registrado y no se puede utilizar porque debe ser único.';
+    END IF;
+END$$
+DELIMITER ;
+
+
+
+DELIMITER $$
+CREATE TRIGGER trigger_before_cliente_update
+BEFORE INSERT ON cliente
+FOR EACH ROW
+BEGIN
+    DECLARE contador INT;
+    SELECT COUNT(*) INTO contador FROM cliente
+     WHERE NEW.saldo_cartera < 0;
+    IF contador > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede actualizar el saldo de la cartera porque es negativoo.';
+    END IF;
+END$$
+DELIMITER ;
+
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
